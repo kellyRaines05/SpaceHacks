@@ -233,7 +233,7 @@ var chart = ui.Chart.image.series({
   .setOptions({
     title: 'SWEa',
     hAxis: {format: 'MM-yyyy'},
-    vAxis: {title: 'Surface Moisture (mm)'},
+    vAxis: {title: 'Snow Water Equivalent (mm)'},
     lineWidth: 1,
     });
     
