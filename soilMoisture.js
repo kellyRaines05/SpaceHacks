@@ -235,7 +235,7 @@ var chart = ui.Chart.image.series({
   .setOptions({
     title: 'SMa',
     hAxis: {format: 'MM-yyyy'},
-    vAxis: {title: 'Surface Moisture (mm)'},
+    vAxis: {title: 'Soil Moisture (mm)'},
     lineWidth: 1,
     });
     
