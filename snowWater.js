@@ -212,29 +212,75 @@ var nepal = /* color: #0b4a8b */ee.Geometry.Polygon(
           [83.47348346506207, 29.282270280214707],
           [83.39793395604237, 29.433637934451777],
           [83.20235279812134, 29.58775738419213],
-          [82.71993125338611, 29.789171980105692]]]);
-          
-var dataset = ee.ImageCollection("IDAHO_EPSCOR/TERRACLIMATE").filter(ee.Filter.date('2019-01-01', '2021-12-01'));
-var swe = dataset.select('swe');
+          [82.71993125338611, 29.789171980105692]]]),
+    swe1_2020 = ee.Image("users/kraines5/SWEImages/swe2020Jan"),
+    swe2_2020 = ee.Image("users/kraines5/SWEImages/swe2020Feb"),
+    swe3_2020 = ee.Image("users/kraines5/SWEImages/swe2020Mar"),
+    swe4_2020 = ee.Image("users/kraines5/SWEImages/swe2020Apr"),
+    swe5_2020 = ee.Image("users/kraines5/SWEImages/swe2020May"),
+    swe6_2020 = ee.Image("users/kraines5/SWEImages/swe2020Jun"),
+    swe7_2020 = ee.Image("users/kraines5/SWEImages/swe2020Jul"),
+    swe8_2020 = ee.Image("users/kraines5/SWEImages/swe2020Aug"),
+    swe9_2020 = ee.Image("users/kraines5/SWEImages/swe2020Sep"),
+    swe10_2020 = ee.Image("users/kraines5/SWEImages/swe2020Oct"),
+    swe11_2020 = ee.Image("users/kraines5/SWEImages/swe2020Nov"),
+    swe12_2020 = ee.Image("users/kraines5/SWEImages/swe2020Dec"),
+    swe1_2021 = ee.Image("users/kraines5/SWEImages/swe2021Jan"),
+    swe2_2021 = ee.Image("users/kraines5/SWEImages/swe2021Feb"),
+    swe3_2021 = ee.Image("users/kraines5/SWEImages/swe2021Mar"),
+    swe4_2021 = ee.Image("users/kraines5/SWEImages/swe2021Apr"),
+    swe5_2021 = ee.Image("users/kraines5/SWEImages/swe2021May"),
+    swe6_2021 = ee.Image("users/kraines5/SWEImages/swe2021Jun"),
+    swe7_2021 = ee.Image("users/kraines5/SWEImages/swe2021Jul"),
+    swe8_2021 = ee.Image("users/kraines5/SWEImages/swe2021Aug"),
+    swe9_2021 = ee.Image("users/kraines5/SWEImages/swe2021Sep"),
+    swe10_2021 = ee.Image("users/kraines5/SWEImages/swe2021Oct"),
+    swe11_2021 = ee.Image("users/kraines5/SWEImages/swe2021Nov"),
+    swe12_2021 = ee.Image("users/kraines5/SWEImages/swe2021Dec"),
+    swe1_2022 = ee.Image("users/kraines5/SWEImages/swe2022Jan"),
+    swe2_2022 = ee.Image("users/kraines5/SWEImages/swe2022Feb"),
+    swe3_2022 = ee.Image("users/kraines5/SWEImages/swe2022Mar"),
+    swe4_2022 = ee.Image("users/kraines5/SWEImages/swe2022Apr"),
+    swe5_2022 = ee.Image("users/kraines5/SWEImages/swe2022May"),
+    swe6_2022 = ee.Image("users/kraines5/SWEImages/swe2022Jun"),
+    swe7_2022 = ee.Image("users/kraines5/SWEImages/swe2022Jul"),
+    swe8_2022 = ee.Image("users/kraines5/SWEImages/swe2022Aug"),
+    swe9_2022 = ee.Image("users/kraines5/SWEImages/swe2022Sep"),
+    swe10_2022 = ee.Image("users/kraines5/SWEImages/swe2022Oct"),
+    swe11_2022 = ee.Image("users/kraines5/SWEImages/swe2022Nov"),
+    swe12_2022 = ee.Image("users/kraines5/SWEImages/swe2022Dec");
 
-var sweVis = {
-  min: 0.0,
-  max: 32767.0,
-  palette: ['0300ff', '418504', 'efff07', 'efff07', 'ff0303'],
-};
-Map.setCenter(84.15322, 27.4030, 5);
-Map.addLayer(swe, sweVis, 'Snow Water Equivalent');
+var gldas_swe_list = ee.List([swe1_2020,swe2_2020,swe3_2020,swe4_2020,swe5_2020,swe6_2020,
+  swe7_2020,swe8_2020,swe9_2020,swe10_2020,swe11_2020, swe12_2020, swe1_2021, swe2_2021,
+  swe3_2021,swe4_2021,swe5_2021,swe6_2021,swe7_2021,swe8_2021,swe9_2021,swe10_2021,swe11_2021,
+  swe12_2021, swe1_2022,swe2_2022,swe3_2022,swe4_2022,swe5_2022,swe6_2022,swe7_2022,swe8_2022,
+  swe9_2022,swe10_2022,swe11_2022,swe12_2022]);
+var swe_ic = ee.ImageCollection.fromImages(gldas_swe_list);
 
-var chart = ui.Chart.image.series({
-  imageCollection: dataset.select('swe'),
+var kgm2_to_cm = 0.10;
+var swe_ic_ts = swe_ic.map(function(img) {
+  var date = ee.Date.fromYMD(img.get('year'), img.get('month'), 1);
+  return img.select('SWE_inst').multiply(kgm2_to_cm).rename(
+    'SWEa').set('system:time_start', date);
+});
+
+// Make plot of SWEa for Basin Boundary
+var SWEaChart = ui.Chart.image.series({
+  imageCollection: swe_ic_ts.filter(ee.Filter.date('2020-01-01', '2023-12-31')),
   region: nepal,
   reducer: ee.Reducer.mean(),
+  scale: 25000
   })
+  .setChartType('ScatterChart')
   .setOptions({
-    title: 'SWEa',
-    hAxis: {format: 'MM-yyyy'},
-    vAxis: {title: 'Snow Water Equivalent (mm)'},
-    lineWidth: 1,
-    });
-    
-print(chart);
+  title: 'Snow Water Equivalent anomalies',
+  trendlines: {
+  0: {
+  color: 'CC0000'
+  }
+  },hAxis: {format: 'MM-yyyy'},
+  vAxis: {title: 'SWEa (cm)'},
+  lineWidth: 2,
+  pointSize: 2
+  });
+  print(SWEaChart);
