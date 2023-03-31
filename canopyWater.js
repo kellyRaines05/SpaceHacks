@@ -224,8 +224,17 @@ var s = {
 Map.setCenter(84.15322, 27.4030, 5);
 Map.addLayer(canopy, s, 'Canopy');
 
+var rewrite = dataset.map(function(image) {
+  return image.addBands(
+    image.expression(
+    'P * 1000', {
+    P: image.select('skin_reservoir_content')
+    }
+  ).float().rename('adjusted'));
+});
+
 var chart = ui.Chart.image.series({
-  imageCollection: dataset.select('skin_reservoir_content'),
+  imageCollection: rewrite.select('skin_reservoir_content'),
   region: nepal,
   reducer: ee.Reducer.mean(),
   })
