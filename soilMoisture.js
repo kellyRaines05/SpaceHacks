@@ -212,31 +212,78 @@ var nepal = /* color: #0b4a8b */ee.Geometry.Polygon(
           [83.47348346506207, 29.282270280214707],
           [83.39793395604237, 29.433637934451777],
           [83.20235279812134, 29.58775738419213],
-          [82.71993125338611, 29.789171980105692]]]);
+          [82.71993125338611, 29.789171980105692]]]),
+    sm1_2020 = ee.Image("users/kraines5/SMImages/sm2020Jan"),
+    sm2_2020 = ee.Image("users/kraines5/SMImages/sm2020Feb"),
+    sm3_2020 = ee.Image("users/kraines5/SMImages/sm2020Mar"),
+    sm4_2020 = ee.Image("users/kraines5/SMImages/sm2020Apr"),
+    sm5_2020 = ee.Image("users/kraines5/SMImages/sm2020May"),
+    sm6_2020 = ee.Image("users/kraines5/SMImages/sm2020Jun"),
+    sm7_2020 = ee.Image("users/kraines5/SMImages/sm2020Jul"),
+    sm8_2020 = ee.Image("users/kraines5/SMImages/sm2020Aug"),
+    sm9_2020 = ee.Image("users/kraines5/SMImages/sm2020Sep"),
+    sm10_2020 = ee.Image("users/kraines5/SMImages/sm2020Oct"),
+    sm11_2020 = ee.Image("users/kraines5/SMImages/sm2020Nov"),
+    sm12_2020 = ee.Image("users/kraines5/SMImages/sm2020Dec"),
+    sm1_2021 = ee.Image("users/kraines5/SMImages/sm2021Jan"),
+    sm2_2021 = ee.Image("users/kraines5/SMImages/sm2021Feb"),
+    sm3_2021 = ee.Image("users/kraines5/SMImages/sm2021Mar"),
+    sm4_2021 = ee.Image("users/kraines5/SMImages/sm2021Apr"),
+    sm5_2021 = ee.Image("users/kraines5/SMImages/sm2021May"),
+    sm6_2021 = ee.Image("users/kraines5/SMImages/sm2021Jun"),
+    sm7_2021 = ee.Image("users/kraines5/SMImages/sm2021Jul"),
+    sm8_2021 = ee.Image("users/kraines5/SMImages/sm2021Aug"),
+    sm9_2021 = ee.Image("users/kraines5/SMImages/sm2021Sep"),
+    sm10_2021 = ee.Image("users/kraines5/SMImages/sm2021Oct"),
+    sm11_2021 = ee.Image("users/kraines5/SMImages/sm2021Nov"),
+    sm12_2021 = ee.Image("users/kraines5/SMImages/sm2021Dec"),
+    sm1_2022 = ee.Image("users/kraines5/SMImages/sm2022Jan"),
+    sm2_2022 = ee.Image("users/kraines5/SMImages/sm2022Feb"),
+    sm3_2022 = ee.Image("users/kraines5/SMImages/sm2022Mar"),
+    sm4_2022 = ee.Image("users/kraines5/SMImages/sm2022Apr"),
+    sm5_2022 = ee.Image("users/kraines5/SMImages/sm2022May"),
+    sm6_2022 = ee.Image("users/kraines5/SMImages/sm2022Jun"),
+    sm7_2022 = ee.Image("users/kraines5/SMImages/sm2022Jul"),
+    sm8_2022 = ee.Image("users/kraines5/SMImages/sm2022Aug"),
+    sm9_2022 = ee.Image("users/kraines5/SMImages/sm2022Sep"),
+    sm10_2022 = ee.Image("users/kraines5/SMImages/sm2022Oct"),
+    sm11_2022 = ee.Image("users/kraines5/SMImages/sm2022Nov"),
+    sm12_2022 = ee.Image("users/kraines5/SMImages/sm2022Dec");
+
+var gldas_sm_list = ee.List([sm1_2020,sm2_2020,sm3_2020,sm4_2020,sm5_2020,sm6_2020,
+  sm7_2020,sm8_2020,sm9_2020,sm10_2020,sm11_2020, sm12_2020, sm1_2021, sm2_2021,
+  sm3_2021,sm4_2021,sm5_2021,sm6_2021,sm7_2021,sm8_2021,sm9_2021,sm10_2021,sm11_2021,
+  sm12_2021, sm1_2022,sm2_2022,sm3_2022,sm4_2022,sm5_2022,sm6_2022,sm7_2022,sm8_2022,
+  sm9_2022,sm10_2022,sm11_2022,sm12_2022]);
+var sm_ic = ee.ImageCollection.fromImages(gldas_sm_list);
+
+var kgm2_to_cm = 0.10;
+var sm_ic_ts = sm_ic.map(function(img) {
+  var date = ee.Date.fromYMD(img.get('year'), img.get('month'), 1);
+  return img.select('RootMoist_inst').multiply(kgm2_to_cm).rename(
+    'SMa').set('system:time_start', date);
+});
 
 
-var dataset = ee.ImageCollection('NASA_USDA/HSL/SMAP10KM_soil_moisture').filter(ee.Filter.date('2020-01-06', '2022-08-02'));
-var soilMoisture = dataset.select('smp');
-var moistureAnomaly = dataset.select('susma');
 
-var soilMoistureVis = {
-  min: 0.0,
-  max: 28.0,
-  palette: ['0300ff', '418504', 'efff07', 'efff07', 'ff0303'],
-};
-Map.setCenter(84.15322, 27.4030, 5);
-Map.addLayer(soilMoisture, soilMoistureVis, 'Soil Moisture');
 
-var chart = ui.Chart.image.series({
-  imageCollection: dataset.select('smp','susma'),
+// Make plot of SWEa for Basin Boundary
+var SMaChart = ui.Chart.image.series({
+  imageCollection: sm_ic_ts.filter(ee.Filter.date('2020-01-01', '2023-12-31')),
   region: nepal,
   reducer: ee.Reducer.mean(),
+  scale: 25000
   })
+  .setChartType('ScatterChart')
   .setOptions({
-    title: 'SMa',
-    hAxis: {format: 'MM-yyyy'},
-    vAxis: {title: 'Soil Moisture (mm)'},
-    lineWidth: 1,
-    });
-    
-print(chart);
+  title: 'Soil Moisture anomalies',
+  trendlines: {
+  0: {
+  color: 'CC0000'
+  }
+  },hAxis: {format: 'MM-yyyy'},
+  vAxis: {title: 'SMa (cm)'},
+  lineWidth: 2,
+  pointSize: 2
+  });
+  print(SMaChart);
